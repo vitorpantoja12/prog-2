@@ -1,144 +1,173 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct No {
+typedef struct No
+{
     int valor;
     struct No *esq;
     struct No *dir;
     int altura;
-} No;
+}No;
 
 No *raiz = NULL;
 
-// Função para calcular a altura do nó
 int altura(No* no) {
     if (no == NULL) return -1;
     return no->altura;
 }
 
-// Função para calcular o fator de balanceamento
-int fator_bl(No *no) {
-    if (no == NULL) return 0;
-    return altura(no->esq) - altura(no->dir);
+int maior(int a, int b){
+    return (a > b) ? a : b;
 }
 
-// Rotação à esquerda
+int fator_bl (No *no){
+    if (no == NULL)
+    {return 0;}
+    int alt_esq = -altura(no->esq);
+    int alt_dir = altura(no->dir);
+    return alt_dir-alt_esq;
+}
+
+int verificar (No *no, int num){
+    if (no==NULL){
+        return 1;
+    } else {
+        if (no->valor==num)
+        {
+            return 0;
+        }
+    }
+    verificar (no->esq, num);
+    verificar (no->dir, num);
+}
+
 No *rot_esq(No *raiz) {
+    if (raiz == NULL || raiz->dir == NULL) {
+        return raiz;
+    }
+
     No *auxr = raiz->dir;
     No *auxf = auxr->esq;
 
     auxr->esq = raiz;
     raiz->dir = auxf;
 
-    // Atualiza as alturas
     raiz->altura = 1 + (altura(raiz->esq) > altura(raiz->dir) ? altura(raiz->esq) : altura(raiz->dir));
     auxr->altura = 1 + (altura(auxr->esq) > altura(auxr->dir) ? altura(auxr->esq) : altura(auxr->dir));
 
-    return auxr; // Nova raiz da subárvore
+    return auxr;
 }
 
-// Rotação à direita
-No *rot_dir(No *raiz) {
-    No *auxr = raiz->esq;
-    No *auxf = auxr->dir;
 
+No *rot_dir(No *raiz){
+    if (raiz == NULL || raiz->dir == NULL) {
+        return raiz;
+    }
+    No *auxr, *auxf;
+    auxr = raiz->esq;
+    auxf = auxr->dir;
     auxr->dir = raiz;
     raiz->esq = auxf;
-
-    // Atualiza as alturas
     raiz->altura = 1 + (altura(raiz->esq) > altura(raiz->dir) ? altura(raiz->esq) : altura(raiz->dir));
     auxr->altura = 1 + (altura(auxr->esq) > altura(auxr->dir) ? altura(auxr->esq) : altura(auxr->dir));
-
-    return auxr; // Nova raiz da subárvore
+    return auxr;
 }
 
-// Rotação dupla direita-esquerda
-No *rot_diresq(No *raiz) {
+No *rot_diresq (No *raiz){
     raiz->dir = rot_dir(raiz->dir);
     return rot_esq(raiz);
 }
 
-// Rotação dupla esquerda-direita
-No *rot_esqdir(No *raiz) {
+No *rot_esqdir (No *raiz){
     raiz->esq = rot_esq(raiz->esq);
     return rot_dir(raiz);
 }
 
-// Função para balancear um nó
-No *balanceamento(No *no) {
+No *balanceamento (No *no, int num){
+    int fb = fator_bl (no);
     if (no == NULL) return no;
-
-    int fb = fator_bl(no);
-
-    // Desbalanceamento para a esquerda
-    if (fb > 1) {
-        if (fator_bl(no->esq) < 0) {
-            no->esq = rot_esq(no->esq);
-        }
-        return rot_dir(no);
+    if (fb>1)
+    {
+        if (no->esq != NULL && num < no->esq->valor)
+        {
+            return rot_dir(no);
+        } else {
+            return rot_diresq(no);}
+    } else if (fb<-1)
+    {
+        if (no->dir != NULL && num > no->dir->valor)
+        {
+            return rot_esq(no);
+        } else {
+            return rot_esqdir(no);}
     }
-
-    // Desbalanceamento para a direita
-    if (fb < -1) {
-        if (fator_bl(no->dir) > 0) {
-            no->dir = rot_dir(no->dir);
-        }
-        return rot_esq(no);
-    }
-
-    return no; // Nenhuma rotação necessária
+    return no;
 }
 
-// Função para inserir um novo valor na árvore AVL
-No *inserir(No *no, int num) {
-    if (no == NULL) {
-        No *novo = (No*) malloc(sizeof(No));
-        if (novo == NULL) {
-            printf("Erro ao alocar memória!\n");
-            return NULL;
-        }
+void inserir (int num){
+    if (verificar(raiz, num)){
+    No *novo = (No*) malloc(sizeof(No));
+
+    if (novo!=NULL){
+        novo-> esq = novo->dir = NULL;
         novo->valor = num;
-        novo->esq = novo->dir = NULL;
         novo->altura = 0;
-        return novo;
+
+        if (raiz==NULL)
+        {
+            raiz = novo;
+            return;
+        } else {
+            No *local = raiz;
+            No *pai = NULL;
+
+            while (local != NULL)
+            {
+                pai = local;
+                if (local->valor > num)
+                {
+                    local = local->esq;
+                } else {
+                    local = local->dir;
+                }
+            }
+
+            if (num < pai->valor) {
+                pai->esq = novo;
+            } else {
+                pai->dir = novo;
+            }
+            pai->altura = maior(altura(pai->esq), altura(pai->dir)) + 1;
+            raiz = balanceamento(raiz, num);
+        }
     }
+    else printf ("Erro!");} 
+    else {printf ("Valor [%d] já inserido.\n"), num;}}
 
-    // Inserção recursiva
-    if (num < no->valor) {
-        no->esq = inserir(no->esq, num);
-    } else if (num > no->valor) {
-        no->dir = inserir(no->dir, num);
-    } else {
-        return no; // Valor duplicado não permitido
-    }
-
-    // Atualiza a altura
-    no->altura = 1 + (altura(no->esq) > altura(no->dir) ? altura(no->esq) : altura(no->dir));
-
-    // Balanceia a árvore
-    return balanceamento(no);
-}
-
-// Função para imprimir a árvore em pré-ordem (para testes)
-void imprimir(No *no) {
+void imprimir_altura (No *no, int alt, int h){
     if (no == NULL) return;
-    printf("[%d] ", no->valor);
-    imprimir(no->esq);
-    imprimir(no->dir);
+    
+    if (altura(no) == alt)
+    {
+        printf ("%d ", no->valor);
+    }
+    imprimir_altura (no->esq, alt, h-1);
+    imprimir_altura (no->dir, alt, h-1);
 }
 
-// Função principal
-int main() {
-    raiz = inserir(raiz, 50);
-    raiz = inserir(raiz, 80);
-    raiz = inserir(raiz, 40);
-    raiz = inserir(raiz, 90);
-    raiz = inserir(raiz, 70);
-    raiz = inserir(raiz, 30);
+void imprimir(No *no){
+    int alt = altura(raiz);
+    for (int i = 0; i <= alt; i++)
+    {
+        imprimir_altura (raiz, i, alt);
+    }
+}
 
-    printf("Árvore AVL (pré-ordem): ");
+int main (){
+    inserir (30);
+    inserir (20);
+    inserir (50);
+    inserir (60);
+    inserir (70);
     imprimir(raiz);
-    printf("\nAltura da raiz: %d\n", altura(raiz));
-
-    return 0;
 }
