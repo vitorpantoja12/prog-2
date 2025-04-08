@@ -69,24 +69,35 @@ void inserir_determinado (int posn, int num){
     if (novo == NULL){
         printf ("Erro!\n");
     } else {
-        novo->valor = num;
-        novo->pos = posn;
-        No *nprox = head;
-        while (nprox->pos!=posn)
+        if (posn<n_nos)
         {
-            nprox=nprox->prox;
+            novo->valor = num;
+            novo->pos = posn;
+            No *nprox = head;
+            while (nprox->pos!=posn)
+            {
+                nprox=nprox->prox;
+            }
+                novo->ant = nprox->ant;
+                nprox->ant->prox = novo;
+                novo->prox = nprox;
+                nprox->ant = novo;
+            No *temp = nprox;
+            while (temp!=NULL)
+            {
+                temp->pos=temp->pos+1;
+                temp=temp->prox;
+            }
+            n_nos++;
+        } else {
+            if (posn==1)
+            {
+                inserir_inicio(num);
+            } else {
+                if (posn >= n_nos+1){
+                    inserir_final(num);}
+            }
         }
-            novo->ant = nprox->ant;
-            nprox->ant->prox = novo;
-            novo->prox = nprox;
-            nprox->ant = novo;
-        No *temp = nprox;
-        while (temp!=NULL)
-        {
-            temp->pos=temp->pos+1;
-            temp=temp->prox;
-        }
-        n_nos++;
     }
 }
 
@@ -136,13 +147,13 @@ void buscar (int num){
     {
         temp=temp->prox;
     }
-    printf ("Nó [%d], localizado na posição (%d).", temp->valor, temp->pos);
+    printf ("\nNó [%d], localizado na posição (%d).\n", temp->valor, temp->pos);
 }
 
 void imprimir_direto (){
     No *temp = head;
     while (temp != NULL){
-        printf ("[%d] (%d) \n", temp->valor, temp->pos);
+        printf ("[%d] ", temp->valor);
         temp = temp->prox;
     }
     printf ("\n");
@@ -151,20 +162,122 @@ void imprimir_direto (){
 void imprimir_reverso (){
     No *temp = tail;
     while (temp != NULL){
-        printf ("\n[%d] (%d)", temp->valor, temp->pos);
+        printf ("\n[%d] ", temp->valor);
         temp = temp->ant;
     }
     printf ("\n");
 }
 
-int main (){
-    int opc;
-    printf ("Selecione uma opção: \n1. Criar lista \n2. Sair\n");
-    scanf ("\n%d", &opc);
-    if (opc==1)
-    {
-        printf ("1. Adicionar nó no ínicio                  2. Adicionar nó no final                   3. Adicionar nó em posição específica\n");
-        printf ("4. Deletar nó do ínicio                    5. Deletar nó no final                     6. Deletar nó em posição específica\n");
-        printf ("7. Buscar nó                               8. Fechar");
+void menu_imprimir() {
+    int opc = 0;
+    printf("\n1. Imprimir direto\n");
+    printf("2. Imprimir reverso\n");
+    printf("Opção: ");
+    scanf("%d", &opc);
+    
+    if (opc == 1) {
+        imprimir_direto();
+    } else if (opc == 2) {
+        imprimir_reverso();
+    } else {
+        printf("\nOpção inválida.\n");
     }
+}
+
+void menu_inserir() {
+    int opc = 0, num, pos;
+    
+    printf("\n1. Inserir no início\n");
+    printf("2. Inserir em uma posição específica\n");
+    printf("3. Inserir no final\n");
+    printf("Opção: ");
+    scanf("%d", &opc);
+
+    switch (opc) {
+        case 1:
+            printf("Digite o número: ");
+            scanf("%d", &num);
+            inserir_inicio(num);
+            break;
+        case 2:
+            printf("Digite o número e a posição: ");
+            scanf("%d %d", &num, &pos);
+            inserir_determinado(pos, num);
+            break;
+        case 3:
+            printf("Digite o número: ");
+            scanf("%d", &num);
+            inserir_final(num);
+            break;
+        default:
+            printf("\nOpção inválida.\n");
+            break;
+    }
+}
+
+void menu_deletar() {
+    int opc = 0, pos;
+    
+    printf("\n1. Deletar do início\n");
+    printf("2. Deletar de uma posição específica\n");
+    printf("3. Deletar do final\n");
+    printf("Opção: ");
+    scanf("%d", &opc);
+
+    switch (opc) {
+        case 1:
+            deletar_inicio();
+            break;
+        case 2:
+            printf("Digite a posição: ");
+            scanf("%d", &pos);
+            deletar_dtm(pos);
+            break;
+        case 3:
+            deletar_final();
+            break;
+        default:
+            printf("\nOpção inválida.\n");
+            break;
+    }
+}
+
+int main() {
+    int opc = 0;
+
+    do {
+        printf("\nSelecione uma opção:\n");
+        printf("1. Inserir na lista\n");
+        printf("2. Deletar da lista\n");
+        printf("3. Imprimir\n");
+        printf("4. Buscar na lista\n");
+        printf("5. Fechar\n");
+        printf("Opção: ");
+        scanf("%d", &opc);
+
+        switch (opc) {
+            case 1:
+                menu_inserir();
+                break;
+            case 2:
+                menu_deletar();
+                break;
+            case 3:
+                menu_imprimir();
+                break;
+            case 4:
+                int numbusc = 0;
+                printf ("Digite o valor a ser buscado: \n");
+                scanf ("%d", &numbusc);
+                buscar(numbusc);
+                break;
+            case 5:
+                break;
+            default:
+                printf("\nOpção inválida.\n");
+                break;
+        }
+    } while (opc != 5);
+
+    return 0;
 }

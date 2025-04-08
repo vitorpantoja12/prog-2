@@ -1,59 +1,75 @@
 #include <stdio.h>
 
-void heap_max (int arr[], int n, int i){
-    int esq, dir;
-    int maior = i;
-    esq = 2*i+1;
-    dir = esq + 1;
-    if (esq<n && arr[esq]>arr[i]){
-        maior = esq;
-    }
-
-    if (dir<n && arr[dir]>arr[i])
+void max_heapify (int array[], int i, int tamanho){
+    int esquerdo = 2*i + 1;
+    int direito = 2*i + 2;
+    int maior;
+    if (esquerdo < tamanho && array[esquerdo] > array[i])
     {
-        maior = dir;
+        maior = esquerdo;
+    } else {
+        maior = i;
     }
 
-    if (maior != i){
-        int temp = arr[i];
-        arr[i] = arr[maior];
-        arr[maior] = temp;
-        heap_max (arr, n, maior);
+    if (direito < tamanho && array[direito] > array[maior])
+    {
+        maior = direito;
+    }
+
+    if (maior != i)
+    {
+        int temp = array[i];
+        array[i] = array[maior];
+        array[maior] = temp;
+        int modificado;
+        modificado = maior;
+        max_heapify(array, modificado, tamanho);
     }
 }
 
-void heapsort (int arr[], int n){
-    for (int i = (n / 2) - 1; i >= 0; i--){
-        heap_max (arr, n, i);}
-
-    for (int i = n - 1; i > 0; i--)
-        {
-           int temp = arr[0];
-           arr[0] = arr[i];
-           arr[i] = temp;
-           heap_max (arr, i, 0);
-        }
+void build_max_heap(int array[], int tamanho) {
+    for (int i = (tamanho / 2) - 1; i >= 0; i--) {
+        max_heapify(array, i, tamanho);
     }
+}
 
-void imprimir(int arr[], int n) {
-    for (int i = 0; i < n; ++i){
-    printf("[%d] ", arr[i]);
-}}
+void heapsort(int array[], int tamanho){
+    build_max_heap(array, tamanho);
+    for (int i = tamanho - 1; i >= 0; i--)
+    {
+        int temp = array[i];
+        array[i] = array[0];
+        array[0] = temp;
+        max_heapify(array, 0, i);
+    }
+}
+
+void imprimir(int array[], int tamanho){
+    printf ("[");
+    for (int i = 0; i < tamanho; i++)
+    {
+        printf (" %d ", array[i]);
+    }
+    printf ("]\n");
+}
 
 int main (){
-    int n;
-    printf ("Digite o número de valores na array: \n");
-    scanf ("%d", &n);
-    int array[n];
-    for (int i = 0; i < n; i++)
+    int tamanho;
+
+    printf("Insira o número de valores da array: ");
+    scanf ("%d", &tamanho);
+
+    int array[tamanho];
+
+    for (int i = 0; i < tamanho; i++)
     {
-        printf ("Insira um valor: ");
-        scanf ("%d", &array[i]);
+        printf ("Insira o valor %d: ", i+1);
+        scanf("%d", &array[i]);
     }
-    printf ("\n");
-    printf ("Array: \n");
-    imprimir (array, n);
-    printf ("\nArray ordenada: \n");
-    heapsort (array, n);
-    imprimir (array, n);
+
+    imprimir(array, tamanho);
+
+    heapsort(array, tamanho);
+
+    imprimir(array, tamanho);
 }
